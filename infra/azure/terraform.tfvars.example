@@ -1,0 +1,22 @@
+# =====================================================================
+# Copia este archivo como terraform.tfvars y completa tus valores.
+#   cp terraform.tfvars.example terraform.tfvars
+# terraform.tfvars está en .gitignore: nunca se sube al repositorio.
+# La contraseña de SQL NO va aquí: usa  export TF_VAR_sql_admin_password='...'
+# =====================================================================
+
+# az account show --query id -o tsv
+subscription_id = "65ce2549-275f-42cc-868f-fbe92eadab52"
+
+# Resource group creado en el paso 2.2 (región southcentralus)
+resource_group_name = "rg-dw-p4"
+
+# Tus iniciales en minúsculas (2 a 6 caracteres). Ej.: "jc"
+# Genera: stdwtottusjc, sql-tottus-jc, adf-tottus-p4-jc, kv-tottus-p4-jc
+sufijo = "jc"
+
+# Tu IP pública: curl ifconfig.me   (actualízala y vuelve a aplicar si cambias de red)
+mi_ip = "209.61.73.253"
+
+# Opcional (tiene valor por defecto)
+# sql_admin_login = "tottusadmin"

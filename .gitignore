@@ -1,0 +1,55 @@
+# ============================================================
+# Proyecto 4 - DW Snowflake sobre Azure (UNDC 2026-II)
+# Nada de secretos, estados ni datos generados en el repositorio
+# ============================================================
+
+# ---- Terraform ----
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.plan
+crash.log
+crash.*.log
+*.tfvars
+!*.tfvars.example
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+# (el archivo .terraform.lock.hcl SÍ se versiona)
+
+# ---- Llaves y secretos ----
+*.p8
+*.pem
+*.key
+*.pub
+.env
+.env.*
+secrets/
+
+# ---- Python ----
+.venv*/
+venv/
+__pycache__/
+*.pyc
+
+# ---- Datos generados del OLTP (se regeneran con generar_datos.py) ----
+oltp/data/
+
+# ---- dbt ----
+dbt_tottus/target/
+dbt_tottus/dbt_packages/
+dbt_tottus/logs/
+logs/
+
+# ---- Power BI (temporales) ----
+*.pbix.bak
+~$*
+
+# ---- Sistema / editores ----
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
