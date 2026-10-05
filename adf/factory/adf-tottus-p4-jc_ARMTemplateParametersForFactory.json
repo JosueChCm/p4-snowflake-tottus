@@ -1,0 +1,15 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "adf-tottus-p4-jc"
+        },
+        "dataFactory_location": {
+            "value": "southcentralus"
+        },
+        "dataFactory_identity_type": {
+            "value": "SystemAssigned"
+        }
+    }
+}

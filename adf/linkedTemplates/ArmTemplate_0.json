@@ -1,0 +1,286 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "type": "string",
+            "metadata": "Nombre de instancia de Data Factory",
+            "defaultValue": "adf-tottus-p4-jc"
+        },
+        "ls_keyvault_properties_typeProperties_baseUrl": {
+            "type": "string",
+            "defaultValue": "https://kv-tottus-p4-jc.vault.azure.net/"
+        },
+        "ls_adls_lake_properties_typeProperties_url": {
+            "type": "string",
+            "defaultValue": "https://stdwtottusjc.dfs.core.windows.net/"
+        },
+        "ls_sql_oltp_properties_typeProperties_server": {
+            "type": "string",
+            "defaultValue": "sql-tottus-jc-centralus.database.windows.net"
+        },
+        "ls_sql_oltp_properties_typeProperties_database": {
+            "type": "string",
+            "defaultValue": "tottus_oltp"
+        },
+        "ls_sql_oltp_properties_typeProperties_userName": {
+            "type": "string",
+            "defaultValue": "tottusadmin"
+        }
+    },
+    "variables": {
+        "factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+    },
+    "resources": [
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_keyvault')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "conexión al Key Vault",
+                "annotations": [],
+                "type": "AzureKeyVault",
+                "typeProperties": {
+                    "baseUrl": "[parameters('ls_keyvault_properties_typeProperties_baseUrl')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_adls_lake')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "conexión al lake",
+                "annotations": [],
+                "type": "AzureBlobFS",
+                "typeProperties": {
+                    "url": "[parameters('ls_adls_lake_properties_typeProperties_url')]"
+                }
+            },
+            "dependsOn": []
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ls_sql_oltp')]",
+            "type": "Microsoft.DataFactory/factories/linkedServices",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "description": "conexión al OLTP",
+                "annotations": [],
+                "type": "AzureSqlDatabase",
+                "typeProperties": {
+                    "server": "[parameters('ls_sql_oltp_properties_typeProperties_server')]",
+                    "database": "[parameters('ls_sql_oltp_properties_typeProperties_database')]",
+                    "encrypt": "mandatory",
+                    "trustServerCertificate": false,
+                    "authenticationType": "SQL",
+                    "userName": "[parameters('ls_sql_oltp_properties_typeProperties_userName')]",
+                    "password": {
+                        "type": "AzureKeyVaultSecret",
+                        "store": {
+                            "referenceName": "ls_keyvault",
+                            "type": "LinkedServiceReference"
+                        },
+                        "secretName": "sql-admin-password"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_keyvault')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_parquet_bronze')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_adls_lake",
+                    "type": "LinkedServiceReference"
+                },
+                "parameters": {
+                    "tabla": {
+                        "type": "string"
+                    },
+                    "carga_id": {
+                        "type": "string"
+                    }
+                },
+                "annotations": [],
+                "type": "Parquet",
+                "typeProperties": {
+                    "location": {
+                        "type": "AzureBlobFSLocation",
+                        "fileName": {
+                            "value": "@concat(dataset().tabla, '.parquet')",
+                            "type": "Expression"
+                        },
+                        "folderPath": {
+                            "value": "@concat(dataset().tabla, '/carga=', dataset().carga_id)",
+                            "type": "Expression"
+                        },
+                        "fileSystem": "bronze"
+                    },
+                    "compressionCodec": "snappy"
+                },
+                "schema": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_adls_lake')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/ds_sql_tabla')]",
+            "type": "Microsoft.DataFactory/factories/datasets",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "linkedServiceName": {
+                    "referenceName": "ls_sql_oltp",
+                    "type": "LinkedServiceReference"
+                },
+                "parameters": {
+                    "tabla": {
+                        "type": "string"
+                    }
+                },
+                "annotations": [],
+                "type": "AzureSqlTable",
+                "schema": [],
+                "typeProperties": {
+                    "schema": "dbo",
+                    "table": {
+                        "value": "@dataset().tabla",
+                        "type": "Expression"
+                    }
+                }
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/linkedServices/ls_sql_oltp')]"
+            ]
+        },
+        {
+            "name": "[concat(parameters('factoryName'), '/pl_ingesta_bronze')]",
+            "type": "Microsoft.DataFactory/factories/pipelines",
+            "apiVersion": "2018-06-01",
+            "properties": {
+                "activities": [
+                    {
+                        "name": "fe_tablas",
+                        "type": "ForEach",
+                        "dependsOn": [],
+                        "userProperties": [],
+                        "typeProperties": {
+                            "items": {
+                                "value": "@pipeline().parameters.tablas",
+                                "type": "Expression"
+                            },
+                            "batchCount": 4,
+                            "activities": [
+                                {
+                                    "name": "cp_tabla",
+                                    "type": "Copy",
+                                    "dependsOn": [],
+                                    "policy": {
+                                        "timeout": "0.12:00:00",
+                                        "retry": 0,
+                                        "retryIntervalInSeconds": 30,
+                                        "secureOutput": false,
+                                        "secureInput": false
+                                    },
+                                    "userProperties": [],
+                                    "typeProperties": {
+                                        "source": {
+                                            "type": "AzureSqlSource",
+                                            "queryTimeout": "02:00:00",
+                                            "partitionOption": "None"
+                                        },
+                                        "sink": {
+                                            "type": "ParquetSink",
+                                            "storeSettings": {
+                                                "type": "AzureBlobFSWriteSettings"
+                                            },
+                                            "formatSettings": {
+                                                "type": "ParquetWriteSettings"
+                                            }
+                                        },
+                                        "enableStaging": false,
+                                        "dataIntegrationUnits": 4,
+                                        "translator": {
+                                            "type": "TabularTranslator",
+                                            "typeConversion": true,
+                                            "typeConversionSettings": {
+                                                "allowDataTruncation": true,
+                                                "treatBooleanAsNumber": false
+                                            }
+                                        }
+                                    },
+                                    "inputs": [
+                                        {
+                                            "referenceName": "ds_sql_tabla",
+                                            "type": "DatasetReference",
+                                            "parameters": {
+                                                "tabla": {
+                                                    "value": "@item()",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    ],
+                                    "outputs": [
+                                        {
+                                            "referenceName": "ds_parquet_bronze",
+                                            "type": "DatasetReference",
+                                            "parameters": {
+                                                "tabla": {
+                                                    "value": "@toLower(item())",
+                                                    "type": "Expression"
+                                                },
+                                                "carga_id": {
+                                                    "value": "@if(empty(pipeline().parameters.carga_id), convertFromUtc(pipeline().TriggerTime, 'SA Pacific Standard Time', 'yyyyMMdd_HHmmss'), pipeline().parameters.carga_id)",
+                                                    "type": "Expression"
+                                                }
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ],
+                "policy": {
+                    "elapsedTimeMetric": {}
+                },
+                "parameters": {
+                    "carga_id": {
+                        "type": "string"
+                    },
+                    "tablas": {
+                        "type": "array",
+                        "defaultValue": [
+                            "Categorias",
+                            "Subcategorias",
+                            "Marcas",
+                            "Proveedores",
+                            "Productos",
+                            "Formatos_Tienda",
+                            "Sucursales",
+                            "Empleados",
+                            "Clientes",
+                            "Metodos_Pago",
+                            "Ventas",
+                            "Detalle_Venta",
+                            "Compras_Proveedor",
+                            "Detalle_Compra",
+                            "Devoluciones"
+                        ]
+                    }
+                },
+                "annotations": []
+            },
+            "dependsOn": [
+                "[concat(variables('factoryId'), '/datasets/ds_sql_tabla')]",
+                "[concat(variables('factoryId'), '/datasets/ds_parquet_bronze')]"
+            ]
+        }
+    ]
+}
