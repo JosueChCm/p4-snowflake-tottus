@@ -1,3 +1,9 @@
+{#- Ley 29733: la masking policy se reaplica en cada corrida, porque dbt recrea la tabla -#}
+{%- set tipo = 'iceberg table' if target.name == 'prod' else 'table' -%}
+{{ config(post_hook=[
+    "alter " ~ tipo ~ " {{ this }} modify column num_documento set masking policy GOLD_DB.MARTS.MP_DATO_PERSONAL"
+]) }}
+
 -- Gold | dim_cliente (SCD2) + fila "Cliente anónimo" para ventas sin cliente.
 -- Privacidad: no expone la fecha de nacimiento, solo el rango de edad.
 -- num_documento se enmascara con una masking policy (Fase 12).

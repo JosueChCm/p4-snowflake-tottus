@@ -1,0 +1,27 @@
+{
+  "name": "ls_snowflake",
+  "properties": {
+    "description": "Snowflake JULTITQ-IC99482 con usuario de servicio SVC_ADF (llave RSA en Key Vault)",
+    "type": "SnowflakeV2",
+    "typeProperties": {
+      "accountIdentifier": "JULTITQ-IC99482",
+      "database": "OPS_DB",
+      "warehouse": "WH_TOTTUS",
+      "role": "ROL_ORQ",
+      "authenticationType": "KeyPair",
+      "user": "SVC_ADF",
+      "privateKey": {
+        "type": "AzureKeyVaultSecret",
+        "store": {
+          "referenceName": "ls_keyvault",
+          "type": "LinkedServiceReference"
+        },
+        "secretName": "sf-adf-private-key"
+      }
+    },
+    "connectVia": {
+      "referenceName": "AutoResolveIntegrationRuntime",
+      "type": "IntegrationRuntimeReference"
+    }
+  }
+}

@@ -1,0 +1,261 @@
+{
+  "name": "pl_p4_full",
+  "properties": {
+    "description": "Proyecto 4: corrida completa OLTP -> Bronze (ADF) -> Bronze Snowflake (full load) -> dbt (Silver, snapshots SCD2, Gold) con bitácora.",
+    "activities": [
+      {
+        "name": "set_carga_id",
+        "description": "carga_id = fecha y hora de Lima (yyyyMMdd_HHmmss)",
+        "type": "SetVariable",
+        "dependsOn": [],
+        "policy": {
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "typeProperties": {
+          "variableName": "carga_id",
+          "value": {
+            "value": "@convertFromUtc(utcNow(), 'SA Pacific Standard Time', 'yyyyMMdd_HHmmss')",
+            "type": "Expression"
+          }
+        }
+      },
+      {
+        "name": "sc_log_inicio",
+        "description": "Bitácora: inicio de la corrida",
+        "type": "Script",
+        "dependsOn": [
+          {
+            "activity": "set_carga_id",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_snowflake",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scripts": [
+            {
+              "type": "NonQuery",
+              "text": {
+                "value": "@concat('CALL OPS_DB.ADMIN.SP_REGISTRAR_CORRIDA(''', variables('carga_id'), ''', ''', pipeline().RunId, ''', ''INICIADA'', ''', 'pl_p4_full', ''')')",
+                "type": "Expression"
+              }
+            }
+          ],
+          "scriptBlockExecutionTimeout": "00:05:00"
+        }
+      },
+      {
+        "name": "ep_ingesta_bronze",
+        "description": "Copia las 15 tablas del OLTP al contenedor bronze",
+        "type": "ExecutePipeline",
+        "dependsOn": [
+          {
+            "activity": "sc_log_inicio",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "secureInput": false
+        },
+        "typeProperties": {
+          "pipeline": {
+            "referenceName": "pl_ingesta_bronze",
+            "type": "PipelineReference"
+          },
+          "waitOnCompletion": true,
+          "parameters": {
+            "carga_id": {
+              "value": "@variables('carga_id')",
+              "type": "Expression"
+            }
+          }
+        }
+      },
+      {
+        "name": "sc_cargar_bronze",
+        "description": "Full load en Snowflake: TRUNCATE + COPY INTO de la corrida actual",
+        "type": "Script",
+        "dependsOn": [
+          {
+            "activity": "ep_ingesta_bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_snowflake",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scripts": [
+            {
+              "type": "NonQuery",
+              "text": {
+                "value": "@concat('CALL BRONZE_DB.RAW.SP_CARGAR_BRONZE(''', variables('carga_id'), ''')')",
+                "type": "Expression"
+              }
+            }
+          ],
+          "scriptBlockExecutionTimeout": "00:30:00"
+        }
+      },
+      {
+        "name": "sc_dbt_build",
+        "description": "dbt build en Snowflake: Silver, snapshots SCD2, Gold y tests",
+        "type": "Script",
+        "dependsOn": [
+          {
+            "activity": "sc_cargar_bronze",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_snowflake",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scripts": [
+            {
+              "type": "NonQuery",
+              "text": "CALL OPS_DB.ADMIN.SP_EJECUTAR_DBT('build --target prod')"
+            }
+          ],
+          "scriptBlockExecutionTimeout": "01:00:00"
+        }
+      },
+      {
+        "name": "sc_log_ok",
+        "description": "Bitácora: fin correcto",
+        "type": "Script",
+        "dependsOn": [
+          {
+            "activity": "sc_dbt_build",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_snowflake",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scripts": [
+            {
+              "type": "NonQuery",
+              "text": {
+                "value": "@concat('CALL OPS_DB.ADMIN.SP_REGISTRAR_CORRIDA(''', variables('carga_id'), ''', ''', pipeline().RunId, ''', ''OK'', ''', 'corrida completa', ''')')",
+                "type": "Expression"
+              }
+            }
+          ],
+          "scriptBlockExecutionTimeout": "00:05:00"
+        }
+      },
+      {
+        "name": "sc_log_error",
+        "description": "Bitácora: la corrida falló en algún paso",
+        "type": "Script",
+        "dependsOn": [
+          {
+            "activity": "sc_dbt_build",
+            "dependencyConditions": [
+              "Failed",
+              "Skipped"
+            ]
+          }
+        ],
+        "policy": {
+          "timeout": "0.02:00:00",
+          "retry": 0,
+          "retryIntervalInSeconds": 30,
+          "secureOutput": false,
+          "secureInput": false
+        },
+        "linkedServiceName": {
+          "referenceName": "ls_snowflake",
+          "type": "LinkedServiceReference"
+        },
+        "typeProperties": {
+          "scripts": [
+            {
+              "type": "NonQuery",
+              "text": {
+                "value": "@concat('CALL OPS_DB.ADMIN.SP_REGISTRAR_CORRIDA(''', variables('carga_id'), ''', ''', pipeline().RunId, ''', ''ERROR'', ''', 'revisar el monitor de ADF', ''')')",
+                "type": "Expression"
+              }
+            }
+          ],
+          "scriptBlockExecutionTimeout": "00:05:00"
+        }
+      },
+      {
+        "name": "fail_corrida",
+        "type": "Fail",
+        "dependsOn": [
+          {
+            "activity": "sc_log_error",
+            "dependencyConditions": [
+              "Succeeded"
+            ]
+          }
+        ],
+        "typeProperties": {
+          "message": {
+            "value": "@concat('La corrida ', variables('carga_id'), ' falló. Ver LOG_CORRIDAS y el monitor de ADF.')",
+            "type": "Expression"
+          },
+          "errorCode": "P4-001"
+        }
+      }
+    ],
+    "variables": {
+      "carga_id": {
+        "type": "String"
+      }
+    },
+    "annotations": [
+      "proyecto4",
+      "full-load",
+      "snapshot-scd2"
+    ]
+  }
+}

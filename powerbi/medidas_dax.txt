@@ -1,0 +1,103 @@
+=====================================================================
+ Proyecto 4 - Power BI Service (DirectQuery sobre GOLD_DB.MARTS)
+=====================================================================
+
+CONEXIÓN
+  Obtener datos > Snowflake
+  Servidor : JULTITQ-IC99482.snowflakecomputing.com
+  Almacén  : WH_TOTTUS
+  Rol      : ROL_POWERBI          (Opciones avanzadas)
+  Modo     : DirectQuery
+  Usuario  : SVC_PBI  (o JOSUECH con rol ROL_POWERBI si SVC_PBI no se pudo crear)
+  Tablas   : DIM_FECHA, DIM_PRODUCTO, DIM_CLIENTE, DIM_SUCURSAL, DIM_EMPLEADO,
+             DIM_METODO_PAGO, FACT_VENTAS, FACT_DEVOLUCIONES
+
+RELACIONES (vista Modelo; muchos a uno; filtro en una dirección)
+  FACT_VENTAS[FECHA_SK]        -> DIM_FECHA[FECHA_SK]
+  FACT_VENTAS[PRODUCTO_SK]     -> DIM_PRODUCTO[PRODUCTO_SK]
+  FACT_VENTAS[CLIENTE_SK]      -> DIM_CLIENTE[CLIENTE_SK]
+  FACT_VENTAS[SUCURSAL_SK]     -> DIM_SUCURSAL[SUCURSAL_SK]
+  FACT_VENTAS[EMPLEADO_SK]     -> DIM_EMPLEADO[EMPLEADO_SK]
+  FACT_VENTAS[METODO_PAGO_SK]  -> DIM_METODO_PAGO[METODO_PAGO_SK]
+  FACT_DEVOLUCIONES[FECHA_SK]    -> DIM_FECHA[FECHA_SK]
+  FACT_DEVOLUCIONES[PRODUCTO_SK] -> DIM_PRODUCTO[PRODUCTO_SK]
+  FACT_DEVOLUCIONES[SUCURSAL_SK] -> DIM_SUCURSAL[SUCURSAL_SK]
+  DIM_FECHA: Marcar como tabla de fechas (columna FECHA)
+  Ocultar en la vista de informe todas las columnas *_SK
+
+MEDIDAS (crear en una tabla "Medidas")
+---------------------------------------------------------------------
+Ventas Netas =
+    SUM ( FACT_VENTAS[MONTO_NETO] )
+
+Ventas Brutas =
+    SUM ( FACT_VENTAS[MONTO_BRUTO] )
+
+Descuentos =
+    SUM ( FACT_VENTAS[DESCUENTO] )
+
+% Descuento =
+    DIVIDE ( [Descuentos], [Ventas Brutas] )
+
+N° Ventas =
+    DISTINCTCOUNT ( FACT_VENTAS[ID_VENTA] )
+
+Unidades =
+    SUM ( FACT_VENTAS[CANTIDAD] )
+
+Ticket Promedio =
+    DIVIDE ( [Ventas Netas], [N° Ventas] )
+
+Ventas Mes Anterior =
+    CALCULATE ( [Ventas Netas], DATEADD ( DIM_FECHA[FECHA], -1, MONTH ) )
+
+Var % Mensual =
+    DIVIDE ( [Ventas Netas] - [Ventas Mes Anterior], [Ventas Mes Anterior] )
+
+Ventas Año Anterior =
+    CALCULATE ( [Ventas Netas], SAMEPERIODLASTYEAR ( DIM_FECHA[FECHA] ) )
+
+% Ventas Clientes CMR =
+    DIVIDE (
+        CALCULATE ( [Ventas Netas], DIM_CLIENTE[TIENE_TARJETA_CMR] = TRUE () ),
+        [Ventas Netas]
+    )
+
+Unidades Devueltas =
+    SUM ( FACT_DEVOLUCIONES[CANTIDAD] )
+
+Monto Devuelto =
+    SUM ( FACT_DEVOLUCIONES[MONTO_ESTIMADO] )
+
+Tasa de Devolución =
+    DIVIDE ( [Unidades Devueltas], [Unidades] )
+
+Última Venta =
+    MAX ( FACT_VENTAS[FECHA_VENTA] )
+
+-- SCD2: diferencia entre lo cobrado y el precio de lista vigente
+Precio Cobrado Promedio =
+    DIVIDE ( SUMX ( FACT_VENTAS, FACT_VENTAS[CANTIDAD] * FACT_VENTAS[PRECIO_COBRADO] ), [Unidades] )
+
+Precio Lista Promedio =
+    DIVIDE ( SUMX ( FACT_VENTAS, FACT_VENTAS[CANTIDAD] * FACT_VENTAS[PRECIO_LISTA_VIGENTE] ), [Unidades] )
+
+N° Versiones Producto =
+    CALCULATE ( COUNTROWS ( DIM_PRODUCTO ), ALLEXCEPT ( DIM_PRODUCTO, DIM_PRODUCTO[ID_PRODUCTO] ) )
+
+PÁGINAS
+---------------------------------------------------------------------
+1. Resumen       Tarjetas: Ventas Netas, N° Ventas, Ticket Promedio, Última Venta
+                 Línea: Ventas Netas por DIM_FECHA[ANIO_MES]; Var % Mensual
+2. Productos     Top 10 DIM_PRODUCTO[NOMBRE_PRODUCTO] por Ventas Netas
+                 Barras por CATEGORIA / MARCA; % Descuento
+3. Tiendas       Ventas por DIM_SUCURSAL[REGION], [DISTRITO], [FORMATO]; Ticket por formato
+4. Clientes      Ventas por RANGO_EDAD; % Ventas Clientes CMR; ventas de "Cliente anónimo"
+5. Historial de  Segmentador ID_PRODUCTO; tabla DIM_PRODUCTO (PRECIO_LISTA, VALIDO_DESDE,
+   precios       VALIDO_HASTA, ES_ACTUAL); Unidades y Ventas Netas por versión
+   (SCD2)        -> pregunta de negocio: ¿el cambio de precio afectó las ventas?
+6. Devoluciones  Tasa de Devolución por categoría y motivo
+
+PUBLICAR
+  Publicar > workspace > Modelo semántico > Configuración >
+  Credenciales del origen de datos > Editar (usuario de Snowflake). No requiere gateway.
