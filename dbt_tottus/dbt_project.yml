@@ -42,6 +42,7 @@ models:
       +schema: MARTS
       +table_format: "{{ 'iceberg' if target.name == 'prod' else 'default' }}"
       +external_volume: EV_GOLD
+
 flags:
   enable_iceberg_materializations: true
   
@@ -49,8 +50,6 @@ snapshots:
   dbt_tottus:
     +database: SILVER_DB
     +schema: SNAPSHOTS
-    +table_format: "{{ 'iceberg' if target.name == 'prod' else 'default' }}"
-    +external_volume: EV_SILVER
 
 data_tests:
   dbt_tottus:
