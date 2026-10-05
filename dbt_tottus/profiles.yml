@@ -1,0 +1,18 @@
+# =====================================================================
+# Perfil que usa dbt Projects on Snowflake (Fase 9).
+# NO contiene secretos: dentro de Snowflake, dbt se ejecuta con la
+# sesión de quien lanza EXECUTE DBT PROJECT (ROL_ORQ desde ADF).
+# En tu PC NO se usa este archivo: define DBT_PROFILES_DIR=~/.dbt
+# =====================================================================
+dbt_tottus:
+  target: prod
+  outputs:
+    prod:
+      type: snowflake
+      account: JULTITQ-IC99482
+      user: JOSUECH
+      role: ROL_ORQ
+      warehouse: WH_TOTTUS
+      database: SILVER_DB
+      schema: STAGING
+      threads: 4

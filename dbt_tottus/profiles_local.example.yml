@@ -1,0 +1,36 @@
+# =====================================================================
+# PLANTILLA del perfil para tu PC.
+# Cópiala a:  C:\Users\<tu_usuario>\.dbt\profiles.yml   (~/.dbt/profiles.yml)
+#   mkdir -p ~/.dbt && cp dbt_tottus/profiles_local.example.yml ~/.dbt/profiles.yml
+# y en private_key_path usa la RUTA COMPLETA de tu llave (sin "~").
+# Ese archivo queda FUERA del repositorio.
+# =====================================================================
+dbt_tottus:
+  target: dev
+  outputs:
+
+    # Desarrollo: DEV_DB, tablas nativas, muestra de datos, rol ROL_DBT
+    dev:
+      type: snowflake
+      account: JULTITQ-IC99482
+      user: JOSUECH
+      authenticator: snowflake_jwt
+      private_key_path: C:/Users/josue/.snowflake/josue_key.p8   # <== ajusta la ruta
+      role: ROL_DBT
+      warehouse: WH_TOTTUS
+      database: DEV_DB
+      schema: DEV_JOSUE
+      threads: 4
+
+    # Producción desde tu PC (solo para la primera validación de Iceberg)
+    prod:
+      type: snowflake
+      account: JULTITQ-IC99482
+      user: JOSUECH
+      authenticator: snowflake_jwt
+      private_key_path: C:/Users/josue/.snowflake/josue_key.p8   # <== ajusta la ruta
+      role: ROL_ORQ
+      warehouse: WH_TOTTUS
+      database: SILVER_DB
+      schema: STAGING
+      threads: 4

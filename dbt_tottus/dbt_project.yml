@@ -1,0 +1,55 @@
+# =====================================================================
+# Proyecto 4 - DW Snowflake sobre Azure | Proyecto dbt
+# ---------------------------------------------------------------------
+# Separación de capas:
+#   models/silver -> SILVER_DB.STAGING    (Iceberg en contenedor silver)
+#   snapshots     -> SILVER_DB.SNAPSHOTS  (Iceberg en contenedor silver)
+#   models/gold   -> GOLD_DB.MARTS        (Iceberg en contenedor gold)
+# Targets:
+#   dev  -> DEV_DB, tablas nativas, muestra reducida (tu PC)
+#   prod -> SILVER_DB / GOLD_DB, Iceberg, volumen completo (nube)
+# =====================================================================
+name: dbt_tottus
+version: "1.0.0"
+config-version: 2
+require-dbt-version: ">=1.9.0"
+
+profile: dbt_tottus
+
+model-paths: ["models"]
+snapshot-paths: ["snapshots"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+target-path: "target"
+clean-targets: ["target", "dbt_packages"]
+
+vars:
+  # En dev solo se procesan los últimos N meses de ventas (muestra coherente)
+  meses_muestra_dev: 3
+
+models:
+  dbt_tottus:
+    +materialized: table
+
+    silver:
+      +database: SILVER_DB
+      +schema: STAGING
+      +table_format: "{{ 'iceberg' if target.name == 'prod' else 'default' }}"
+      +external_volume: EV_SILVER
+
+    gold:
+      +database: GOLD_DB
+      +schema: MARTS
+      +table_format: "{{ 'iceberg' if target.name == 'prod' else 'default' }}"
+      +external_volume: EV_GOLD
+
+snapshots:
+  dbt_tottus:
+    +database: SILVER_DB
+    +schema: SNAPSHOTS
+    +table_format: "{{ 'iceberg' if target.name == 'prod' else 'default' }}"
+    +external_volume: EV_SILVER
+
+data_tests:
+  dbt_tottus:
+    +severity: error

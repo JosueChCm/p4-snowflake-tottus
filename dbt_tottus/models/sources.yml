@@ -1,0 +1,34 @@
+version: 2
+
+sources:
+  - name: bronze
+    description: >
+      Capa Bronze: copia exacta del OLTP Tottus (Azure SQL) cargada en cada corrida
+      con TRUNCATE + COPY INTO desde el contenedor bronze (SP_CARGAR_BRONZE).
+    database: BRONZE_DB
+    schema: RAW
+    loaded_at_field: _LOAD_TS
+    freshness:
+      warn_after: {count: 2, period: day}
+      error_after: {count: 7, period: day}
+    tables:
+      - name: CATEGORIAS
+      - name: SUBCATEGORIAS
+      - name: MARCAS
+      - name: PROVEEDORES
+      - name: PRODUCTOS
+        description: Catálogo de productos (dimensión SCD2)
+      - name: FORMATOS_TIENDA
+      - name: SUCURSALES
+        description: Tiendas Tottus (dimensión SCD2)
+      - name: EMPLEADOS
+      - name: CLIENTES
+        description: Clientes; contiene datos personales (DNI)
+      - name: METODOS_PAGO
+      - name: VENTAS
+        description: Cabecera de venta
+      - name: DETALLE_VENTA
+        description: Líneas de venta (grano del hecho principal)
+      - name: COMPRAS_PROVEEDOR
+      - name: DETALLE_COMPRA
+      - name: DEVOLUCIONES

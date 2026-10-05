@@ -1,0 +1,99 @@
+version: 2
+
+models:
+  - name: dim_fecha
+    description: Calendario 2018-2028
+    columns:
+      - name: fecha_sk
+        data_tests: [unique, not_null]
+
+  - name: dim_producto
+    description: Producto SCD2 (una fila por versión)
+    columns:
+      - name: producto_sk
+        data_tests: [unique, not_null]
+      - name: precio_lista
+        data_tests: [not_null]
+
+  - name: dim_cliente
+    description: Cliente SCD2 + fila de cliente anónimo (-1)
+    columns:
+      - name: cliente_sk
+        data_tests: [unique, not_null]
+
+  - name: dim_sucursal
+    description: Sucursal SCD2 (una fila por versión)
+    columns:
+      - name: sucursal_sk
+        data_tests: [unique, not_null]
+
+  - name: dim_empleado
+    columns:
+      - name: empleado_sk
+        data_tests: [unique, not_null]
+
+  - name: dim_metodo_pago
+    columns:
+      - name: metodo_pago_sk
+        data_tests: [unique, not_null]
+
+  - name: fact_ventas
+    description: Hecho principal - una fila por línea de venta
+    columns:
+      - name: id_detalle_venta
+        data_tests: [unique, not_null]
+      - name: monto_neto
+        data_tests: [not_null]
+      - name: fecha_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_fecha')
+              field: fecha_sk
+      - name: producto_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_producto')
+              field: producto_sk
+      - name: cliente_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_cliente')
+              field: cliente_sk
+      - name: sucursal_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_sucursal')
+              field: sucursal_sk
+      - name: empleado_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_empleado')
+              field: empleado_sk
+      - name: metodo_pago_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_metodo_pago')
+              field: metodo_pago_sk
+
+  - name: fact_devoluciones
+    description: Devoluciones con monto estimado
+    columns:
+      - name: id_devolucion
+        data_tests: [unique, not_null]
+      - name: fecha_sk
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('dim_fecha')
+              field: fecha_sk
+      - name: producto_sk
+        data_tests:
+          - relationships:
+              to: ref('dim_producto')
+              field: producto_sk

@@ -1,0 +1,144 @@
+version: 2
+
+models:
+  - name: stg_categorias
+    description: Categorías de producto
+    columns:
+      - name: id_categoria
+        data_tests: [unique, not_null]
+  - name: stg_subcategorias
+    description: Subcategorías
+    columns:
+      - name: id_subcategoria
+        data_tests: [unique, not_null]
+      - name: id_categoria
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_categorias')
+              field: id_categoria
+  - name: stg_marcas
+    description: Marcas (propias y de terceros)
+    columns:
+      - name: id_marca
+        data_tests: [unique, not_null]
+  - name: stg_proveedores
+    description: Proveedores
+    columns:
+      - name: id_proveedor
+        data_tests: [unique, not_null]
+  - name: stg_productos
+    description: Productos (origen del snapshot SCD2)
+    columns:
+      - name: id_producto
+        data_tests: [unique, not_null]
+      - name: id_subcategoria
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_subcategorias')
+              field: id_subcategoria
+      - name: id_marca
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_marcas')
+              field: id_marca
+      - name: id_proveedor
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_proveedores')
+              field: id_proveedor
+  - name: stg_formatos_tienda
+    description: Formatos de tienda
+    columns:
+      - name: id_formato
+        data_tests: [unique, not_null]
+  - name: stg_sucursales
+    description: Sucursales (origen del snapshot SCD2)
+    columns:
+      - name: id_sucursal
+        data_tests: [unique, not_null]
+      - name: id_formato
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_formatos_tienda')
+              field: id_formato
+  - name: stg_empleados
+    description: Empleados
+    columns:
+      - name: id_empleado
+        data_tests: [unique, not_null]
+      - name: id_sucursal
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sucursales')
+              field: id_sucursal
+  - name: stg_clientes
+    description: Clientes (origen del snapshot SCD2); contiene datos personales
+    columns:
+      - name: id_cliente
+        data_tests: [unique, not_null]
+  - name: stg_metodos_pago
+    description: Métodos de pago
+    columns:
+      - name: id_metodo_pago
+        data_tests: [unique, not_null]
+  - name: stg_ventas
+    description: Cabecera de venta
+    columns:
+      - name: id_venta
+        data_tests: [unique, not_null]
+      - name: id_sucursal
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_sucursales')
+              field: id_sucursal
+      - name: id_empleado
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_empleados')
+              field: id_empleado
+      - name: id_metodo_pago
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_metodos_pago')
+              field: id_metodo_pago
+  - name: stg_detalle_venta
+    description: Líneas de venta
+    columns:
+      - name: id_detalle_venta
+        data_tests: [unique, not_null]
+      - name: id_venta
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_ventas')
+              field: id_venta
+      - name: id_producto
+        data_tests:
+          - not_null
+          - relationships:
+              to: ref('stg_productos')
+              field: id_producto
+  - name: stg_compras_proveedor
+    description: Compras a proveedores
+    columns:
+      - name: id_compra
+        data_tests: [unique, not_null]
+  - name: stg_detalle_compra
+    description: Líneas de compra
+    columns:
+      - name: id_detalle_compra
+        data_tests: [unique, not_null]
+  - name: stg_devoluciones
+    description: Devoluciones
+    columns:
+      - name: id_devolucion
+        data_tests: [unique, not_null]

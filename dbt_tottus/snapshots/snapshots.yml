@@ -1,0 +1,36 @@
+# =====================================================================
+# Snapshots SCD2 (Tipo 2): con full load, el ÚNICO lugar de Snowflake
+# que conserva la historia. En cada corrida dbt compara el stg_* actual
+# con la última versión guardada usando updated_at (lo mantienen los
+# triggers del OLTP):
+#   - si cambió: cierra la versión vigente (dbt_valid_to) y abre una nueva
+#   - si la fila desapareció del origen: cierra su versión (hard_deletes)
+# NUNCA borrar ni recrear estas tablas en producción.
+# =====================================================================
+snapshots:
+  - name: snap_productos
+    relation: ref('stg_productos')
+    description: Historia de precios, categoría y estado de cada producto
+    config:
+      unique_key: id_producto
+      strategy: timestamp
+      updated_at: updated_at
+      hard_deletes: invalidate
+
+  - name: snap_clientes
+    relation: ref('stg_clientes')
+    description: Historia de los datos de cada cliente (tarjeta CMR, documento, etc.)
+    config:
+      unique_key: id_cliente
+      strategy: timestamp
+      updated_at: updated_at
+      hard_deletes: invalidate
+
+  - name: snap_sucursales
+    relation: ref('stg_sucursales')
+    description: Historia de cada tienda (formato, ubicación)
+    config:
+      unique_key: id_sucursal
+      strategy: timestamp
+      updated_at: updated_at
+      hard_deletes: invalidate
