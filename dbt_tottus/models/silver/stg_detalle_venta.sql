@@ -5,7 +5,12 @@ select
     cast(d.id_producto as integer)                      as id_producto,
     cast(d.cantidad as integer)                         as cantidad,
     cast(d.precio_unitario as number(10,2))             as precio_unitario,
-    cast(coalesce(d.descuento, 0) as number(10,2))      as descuento,
+    -- Regla de calidad: el descuento aplicado nunca supera el monto bruto de la línea.
+    -- Se conserva el valor original para auditoría (Bronze queda intacto).
+    cast(coalesce(d.descuento, 0) as number(10,2))                              as descuento_original,
+    cast(least(coalesce(d.descuento, 0), d.cantidad * d.precio_unitario)
+         as number(10,2))                                                       as descuento,
+    (coalesce(d.descuento, 0) > d.cantidad * d.precio_unitario)                 as descuento_ajustado,
     {{ ts6('d.updated_at') }}                           as updated_at,
     {{ ts6("convert_timezone('UTC', d._load_ts)") }}    as _load_ts,
     cast(d._source_file as varchar)                     as _source_file

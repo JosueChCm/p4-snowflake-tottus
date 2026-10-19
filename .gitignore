@@ -53,3 +53,4 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea/
+dbt_tottus/.user.yml

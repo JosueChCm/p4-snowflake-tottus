@@ -24,10 +24,15 @@ SELECT 'Devoluciones',
        (SELECT COUNT(*) FROM SILVER_DB.STAGING.STG_DEVOLUCIONES),
        (SELECT COUNT(*) FROM GOLD_DB.MARTS.FACT_DEVOLUCIONES);
 
-/* 2) Conciliación de montos (debe coincidir con ventas_netas del OLTP) - */
+/* 2) Conciliación de montos (regla de calidad de descuentos) ----------
+      Bronze conserva el dato original; Gold aplica el tope de descuento.
+      Debe cumplirse: ventas_netas_gold + ajustes = ventas_netas_bronze    */
 SELECT
   (SELECT SUM(cantidad * precio_unitario - COALESCE(descuento, 0)) FROM BRONZE_DB.RAW.DETALLE_VENTA)::NUMBER(18,2) AS ventas_netas_bronze,
-  (SELECT SUM(monto_neto) FROM GOLD_DB.MARTS.FACT_VENTAS)::NUMBER(18,2)                                            AS ventas_netas_gold;
+  (SELECT SUM(monto_neto)       FROM GOLD_DB.MARTS.FACT_VENTAS)::NUMBER(18,2)                                    AS ventas_netas_gold,
+  (SELECT SUM(ajuste_descuento) FROM GOLD_DB.MARTS.FACT_VENTAS)::NUMBER(18,2)                                    AS ajustes_descuento,
+  (SELECT COUNT_IF(descuento_ajustado) FROM GOLD_DB.MARTS.FACT_VENTAS)                                           AS lineas_ajustadas,
+  (SELECT COUNT_IF(monto_neto < 0)     FROM GOLD_DB.MARTS.FACT_VENTAS)                                           AS lineas_neto_negativo;
 
 /* 3) Integridad del modelo estrella: hechos sin dimensión (esperado 0) - */
 SELECT
