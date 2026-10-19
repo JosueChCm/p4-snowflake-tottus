@@ -7,6 +7,10 @@
             "metadata": "Nombre de instancia de Data Factory",
             "defaultValue": "adf-tottus-p4-jc"
         },
+        "ls_snowflake_privateKeyPassphrase": {
+            "type": "secureString",
+            "metadata": "Cadena protegida para \"privateKeyPassphrase\"de \"ls_snowflake\""
+        },
         "ls_keyvault_properties_typeProperties_baseUrl": {
             "type": "string",
             "defaultValue": "https://kv-tottus-p4-jc.vault.azure.net/"
@@ -26,6 +30,14 @@
         "ls_sql_oltp_properties_typeProperties_userName": {
             "type": "string",
             "defaultValue": "tottusadmin"
+        },
+        "ls_snowflake_properties_typeProperties_database": {
+            "type": "string",
+            "defaultValue": "OPS_DB"
+        },
+        "ls_snowflake_properties_typeProperties_role": {
+            "type": "string",
+            "defaultValue": "ROL_ORQ"
         },
         "containerUri": {
             "type": "string",
@@ -54,6 +66,9 @@
                     "factoryName": {
                         "value": "[parameters('factoryName')]"
                     },
+                    "ls_snowflake_privateKeyPassphrase": {
+                        "value": "[parameters('ls_snowflake_privateKeyPassphrase')]"
+                    },
                     "ls_keyvault_properties_typeProperties_baseUrl": {
                         "value": "[parameters('ls_keyvault_properties_typeProperties_baseUrl')]"
                     },
@@ -68,6 +83,12 @@
                     },
                     "ls_sql_oltp_properties_typeProperties_userName": {
                         "value": "[parameters('ls_sql_oltp_properties_typeProperties_userName')]"
+                    },
+                    "ls_snowflake_properties_typeProperties_database": {
+                        "value": "[parameters('ls_snowflake_properties_typeProperties_database')]"
+                    },
+                    "ls_snowflake_properties_typeProperties_role": {
+                        "value": "[parameters('ls_snowflake_properties_typeProperties_role')]"
                     }
                 }
             },
