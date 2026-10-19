@@ -44,6 +44,12 @@ models:
         data_tests: [unique, not_null]
       - name: monto_neto
         data_tests: [not_null]
+      - name: ajuste_descuento
+        description: Exceso de descuento corregido por la regla de calidad (0 si no se ajustó)
+        data_tests: [not_null]
+      - name: descuento_ajustado
+        description: TRUE si el descuento original superaba el monto bruto
+        data_tests: [not_null]
       - name: fecha_sk
         data_tests:
           - not_null

@@ -19,7 +19,10 @@ select
     d.cantidad,
     d.precio_unitario                                       as precio_cobrado,
     p.precio_lista                                          as precio_lista_vigente,
-    d.descuento,
+    d.descuento,                                            -- descuento aplicado (con tope)
+    d.descuento_original,
+    cast(d.descuento_original - d.descuento as number(14,2)) as ajuste_descuento,
+    d.descuento_ajustado,
     cast(d.cantidad * d.precio_unitario as number(14,2))                as monto_bruto,
     cast(d.cantidad * d.precio_unitario - d.descuento as number(14,2))  as monto_neto,
     d._load_ts
