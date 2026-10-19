@@ -26,7 +26,7 @@ SELECT 'Devoluciones',
 
 /* 2) Conciliación de montos (regla de calidad de descuentos) ----------
       Bronze conserva el dato original; Gold aplica el tope de descuento.
-      Debe cumplirse: ventas_netas_gold + ajustes = ventas_netas_bronze    */
+      Debe cumplirse: ventas_netas_gold - ajustes = ventas_netas_bronze    */
 SELECT
   (SELECT SUM(cantidad * precio_unitario - COALESCE(descuento, 0)) FROM BRONZE_DB.RAW.DETALLE_VENTA)::NUMBER(18,2) AS ventas_netas_bronze,
   (SELECT SUM(monto_neto)       FROM GOLD_DB.MARTS.FACT_VENTAS)::NUMBER(18,2)                                    AS ventas_netas_gold,
