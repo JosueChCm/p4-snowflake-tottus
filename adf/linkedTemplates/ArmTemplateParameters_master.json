@@ -5,6 +5,9 @@
         "factoryName": {
             "value": "adf-tottus-p4-jc"
         },
+        "ls_snowflake_privateKeyPassphrase": {
+            "value": ""
+        },
         "ls_keyvault_properties_typeProperties_baseUrl": {
             "value": "https://kv-tottus-p4-jc.vault.azure.net/"
         },
@@ -19,6 +22,12 @@
         },
         "ls_sql_oltp_properties_typeProperties_userName": {
             "value": "tottusadmin"
+        },
+        "ls_snowflake_properties_typeProperties_database": {
+            "value": "OPS_DB"
+        },
+        "ls_snowflake_properties_typeProperties_role": {
+            "value": "ROL_ORQ"
         },
         "containerUri": {
             "value": ""
