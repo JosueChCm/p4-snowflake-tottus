@@ -25,10 +25,10 @@ CREATE FILE FORMAT IF NOT EXISTS BRONZE_DB.RAW.FF_PARQUET
   COMMENT = 'Parquet (snappy) generado por ADF';
 
 CREATE STAGE IF NOT EXISTS BRONZE_DB.RAW.STG_BRONZE
-  URL                 = 'azure://stdwtottusjc.blob.core.windows.net/bronze/'
+  URL                 = 'azure://stdwtottusjc2.blob.core.windows.net/bronze/'
   STORAGE_INTEGRATION = AZ_BRONZE_INT
   FILE_FORMAT         = BRONZE_DB.RAW.FF_PARQUET
-  COMMENT             = 'Contenedor bronze del lake stdwtottusjc';
+  COMMENT             = 'Contenedor bronze del lake stdwtottusjc2';
 
 -- Debe listar los 15 Parquet de cada corrida
 LIST @BRONZE_DB.RAW.STG_BRONZE;

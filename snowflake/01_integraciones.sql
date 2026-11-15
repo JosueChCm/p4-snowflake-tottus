@@ -2,7 +2,7 @@
    Proyecto 4 - DW Snowflake sobre Azure
    01_integraciones.sql   —   Ejecutar en Snowsight con rol ACCOUNTADMIN
    ---------------------------------------------------------------------
-   Conecta Snowflake con los tres contenedores del lake stdwtottusjc:
+   Conecta Snowflake con los tres contenedores del lake stdwtottusjc2:
      - AZ_BRONZE_INT  (storage integration): LEER los Parquet de bronze
      - EV_SILVER      (external volume):     ESCRIBIR Iceberg en silver
      - EV_GOLD        (external volume):     ESCRIBIR Iceberg en gold
@@ -20,26 +20,26 @@ CREATE STORAGE INTEGRATION IF NOT EXISTS AZ_BRONZE_INT
   TYPE                      = EXTERNAL_STAGE
   STORAGE_PROVIDER          = 'AZURE'
   ENABLED                   = TRUE
-  AZURE_TENANT_ID           = '82d43218-95ae-4c58-90b0-c3e1d9c40e57'
-  STORAGE_ALLOWED_LOCATIONS = ('azure://stdwtottusjc.blob.core.windows.net/bronze/')
+  AZURE_TENANT_ID           = '3dc53224-7e61-4967-8fa4-49fcdcb159bb'
+  STORAGE_ALLOWED_LOCATIONS = ('azure://stdwtottusjc2.blob.core.windows.net/bronze/')
   COMMENT                   = 'Lectura de la capa Bronze (Parquet de ADF)';
 
 CREATE EXTERNAL VOLUME IF NOT EXISTS EV_SILVER
   STORAGE_LOCATIONS = ((
-    NAME             = 'silver_southcentralus'
+    NAME             = 'silver_westus2'
     STORAGE_PROVIDER = 'AZURE'
-    STORAGE_BASE_URL = 'azure://stdwtottusjc.blob.core.windows.net/silver/'
-    AZURE_TENANT_ID  = '82d43218-95ae-4c58-90b0-c3e1d9c40e57'
+    STORAGE_BASE_URL = 'azure://stdwtottusjc2.blob.core.windows.net/silver/'
+    AZURE_TENANT_ID  = '3dc53224-7e61-4967-8fa4-49fcdcb159bb'
   ))
   ALLOW_WRITES = TRUE
   COMMENT      = 'Capa Silver: tablas Iceberg en el contenedor silver';
 
 CREATE EXTERNAL VOLUME IF NOT EXISTS EV_GOLD
   STORAGE_LOCATIONS = ((
-    NAME             = 'gold_southcentralus'
+    NAME             = 'gold_westus2'
     STORAGE_PROVIDER = 'AZURE'
-    STORAGE_BASE_URL = 'azure://stdwtottusjc.blob.core.windows.net/gold/'
-    AZURE_TENANT_ID  = '82d43218-95ae-4c58-90b0-c3e1d9c40e57'
+    STORAGE_BASE_URL = 'azure://stdwtottusjc2.blob.core.windows.net/gold/'
+    AZURE_TENANT_ID  = '3dc53224-7e61-4967-8fa4-49fcdcb159bb'
   ))
   ALLOW_WRITES = TRUE
   COMMENT      = 'Capa Gold: tablas Iceberg en el contenedor gold';

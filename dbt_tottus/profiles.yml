@@ -9,7 +9,7 @@ dbt_tottus:
   outputs:
     prod:
       type: snowflake
-      account: JULTITQ-IC99482
+      account: YHZMGJJ-RE04545
       user: JOSUECH
       role: ROL_ORQ
       warehouse: WH_TOTTUS

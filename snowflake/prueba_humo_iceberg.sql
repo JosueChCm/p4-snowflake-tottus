@@ -50,8 +50,8 @@ UNION ALL
 SELECT 'GOLD',           * FROM GOLD_DB.MARTS.PRUEBA_HUMO;
 
 /* 4) Comprobar en Azure (Git Bash) — deben aparecer data/ y metadata/:
-      az storage blob list --account-name stdwtottusjc -c silver --auth-mode login --query "[].name" -o tsv
-      az storage blob list --account-name stdwtottusjc -c gold   --auth-mode login --query "[].name" -o tsv
+      az storage blob list --account-name stdwtottusjc2 -c silver --auth-mode login --query "[].name" -o tsv
+      az storage blob list --account-name stdwtottusjc2 -c gold   --auth-mode login --query "[].name" -o tsv
       ¡Guarda una captura! Es la evidencia de la separación física de capas.   */
 
 /* 5) Limpiar (después de la captura) ---------------------------------- */

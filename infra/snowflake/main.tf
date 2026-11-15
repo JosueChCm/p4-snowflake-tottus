@@ -21,7 +21,7 @@ terraform {
   # Mismo contenedor de estado que Azure, con otra clave
   backend "azurerm" {
     resource_group_name  = "rg-dw-p4"
-    storage_account_name = "sttfstatep4jc"
+    storage_account_name = "sttfstatep4jc2"
     container_name       = "tfstate"
     key                  = "snowflake.tfstate"
     use_azuread_auth     = true

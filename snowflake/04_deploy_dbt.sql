@@ -5,7 +5,7 @@
    Snowflake lee el proyecto dbt desde la rama main de GitHub y lo
    ejecuta dentro de Snowflake. ADF solo tendrá que hacer:
         CALL OPS_DB.ADMIN.SP_EJECUTAR_DBT();
-   Antes de ejecutar: reemplaza <TU_USUARIO_GITHUB> (2 lugares).
+   Antes de ejecutar: reemplaza JosueChCm (2 lugares).
    El repositorio debe ser PÚBLICO (no se usa token).
    ===================================================================== */
 

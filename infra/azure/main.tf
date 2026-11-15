@@ -19,7 +19,7 @@ terraform {
   # reemplaza "xx" por tus iniciales (igual que en el paso 3.1 del manual).
   backend "azurerm" {
     resource_group_name  = "rg-dw-p4"
-    storage_account_name = "sttfstatep4jc"
+    storage_account_name = "sttfstatep4jc2"
     container_name       = "tfstate"
     key                  = "azure.tfstate"
     use_azuread_auth     = true

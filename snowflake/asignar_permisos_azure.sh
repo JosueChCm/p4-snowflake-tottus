@@ -19,7 +19,7 @@ set -euo pipefail
 export MSYS_NO_PATHCONV=1   # evita que Git Bash convierta los /subscriptions/... en rutas de Windows
 
 RG="rg-dw-p4"
-LAKE="stdwtottusjc"
+LAKE="stdwtottusjc2"
 APP_NAME_COMPLETO="${1:?Indica el AZURE_MULTI_TENANT_APP_NAME devuelto por Snowflake}"
 
 # El nombre visible en Entra ID es la parte anterior al guion bajo

@@ -67,7 +67,7 @@ CREATE USER IF NOT EXISTS SVC_ADF
   TYPE              = SERVICE
   DEFAULT_ROLE      = ROL_ORQ
   DEFAULT_WAREHOUSE = WH_TOTTUS
-  RSA_PUBLIC_KEY    = 'PEGAR_AQUI_LA_LLAVE_PUBLICA_DE_ADF'          -- <== 1
+  RSA_PUBLIC_KEY    = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAuqx30M01fLvCL7h2QcETccTf6k2RGh1KvnDU+5nUR5whxKsjRLIQh+yStnmLaDEne4ybgTegP0pxPu28zYu1fSLXTHUhna/YG0NWq2uHegRf26hCAEAuvX+DO8R394XDBrxVkua0AeXyU/AA3EgIfusBaErf4YaqbT/vjkQ/UZy0vzLO3QjGdL16d/vCT5qYRvWgkl6IYMEkBQXZ/ZDCISECgy4Fayi1NKnCZ/OrcIjC/5XNl9/WZiVGRThZ/IFwe9+R449cfM2YqlaVDlImQB0rQmPBLqdZe8pmApgvO16/S6KkFRL+KJhUkmYNlxpo5FjL1X3YehbwxPyFtNT4YQIDAQAB'          -- <== 1
   COMMENT           = 'Usuario técnico de Azure Data Factory';
 GRANT ROLE ROL_ORQ TO USER SVC_ADF;
 
@@ -86,7 +86,7 @@ GRANT ROLE ROL_POWERBI TO USER SVC_PBI;
    rol ROL_POWERBI, o se configura SSO.                                 */
 
 /* 8) Tu usuario -------------------------------------------------------- */
-ALTER USER JOSUECH SET DEFAULT_WAREHOUSE = WH_TOTTUS;
+ALTER USER "2411110041" SET DEFAULT_WAREHOUSE = WH_TOTTUS;
 
 /* 9) Verificación ------------------------------------------------------ */
 SHOW GRANTS TO ROLE ROL_INGESTA;

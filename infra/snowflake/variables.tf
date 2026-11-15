@@ -5,19 +5,19 @@
 variable "sf_organization" {
   description = "Organización de Snowflake (primera parte del identificador)."
   type        = string
-  default     = "JULTITQ"
+  default     = "YHZMGJJ"
 }
 
 variable "sf_account" {
   description = "Nombre de cuenta de Snowflake (segunda parte del identificador)."
   type        = string
-  default     = "IC99482"
+  default     = "RE04545"
 }
 
 variable "sf_user" {
   description = "Usuario con el que Terraform se conecta (con llave RSA registrada)."
   type        = string
-  default     = "JOSUECH"
+  default     = "2411110041"
 }
 
 variable "sf_private_key_path" {

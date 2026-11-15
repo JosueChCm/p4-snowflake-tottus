@@ -12,7 +12,7 @@ dbt_tottus:
     # Desarrollo: DEV_DB, tablas nativas, muestra de datos, rol ROL_DBT
     dev:
       type: snowflake
-      account: JULTITQ-IC99482
+      account: YHZMGJJ-RE04545
       user: JOSUECH
       authenticator: snowflake_jwt
       private_key_path: C:/Users/josue/.snowflake/josue_key.p8   # <== ajusta la ruta
@@ -25,7 +25,7 @@ dbt_tottus:
     # Producción desde tu PC (solo para la primera validación de Iceberg)
     prod:
       type: snowflake
-      account: JULTITQ-IC99482
+      account: YHZMGJJ-RE04545
       user: JOSUECH
       authenticator: snowflake_jwt
       private_key_path: C:/Users/josue/.snowflake/josue_key.p8   # <== ajusta la ruta
