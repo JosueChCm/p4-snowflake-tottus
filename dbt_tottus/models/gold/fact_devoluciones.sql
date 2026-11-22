@@ -17,6 +17,7 @@ select
     p.producto_sk,
     su.sucursal_sk,
     dv.motivo,
+    dv.canal,
     dv.fecha_devolucion,
     dv.cantidad,
     cast(dv.cantidad * coalesce(pr.precio_neto_unitario, 0) as number(14,2)) as monto_estimado
