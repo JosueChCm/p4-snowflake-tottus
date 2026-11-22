@@ -6,6 +6,7 @@ select
     {{ texto('d.motivo') }}                             as motivo,
     {{ ts6('d.fecha_devolucion') }}                     as fecha_devolucion,
     cast(d.cantidad as integer)                         as cantidad,
+    coalesce({{ texto('d.canal') }}, 'Tienda')         as canal,              -- Tienda / WhatsApp (bot posventa)
     {{ ts6('d.updated_at') }}                           as updated_at,
     {{ ts6("convert_timezone('UTC', d._load_ts)") }}    as _load_ts,
     cast(d._source_file as varchar)                     as _source_file
